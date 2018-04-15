@@ -10,6 +10,8 @@ public class Vertex{
     private double[][] matrixQ;
     private List<Edge> edgesList;
     private boolean isNeedCalc = true;
+    private int numCur;
+    private int mn = 1;
 
     public Vertex(int x, int y) {
         this.x = x;
@@ -22,9 +24,13 @@ public class Vertex{
         edgesList.add(edge);
     }
 
+    public void upMn(int r){
+        mn*=r;
+    }
+
     public void calMatrix(){
         if(!isNeedCalc) return;
-        System.out.println("Cal Mat for {" + this + "}");
+        //System.out.println("Cal Mat for {" + this + "}");
         double q11 = 0; double q12 = 0; double q1 = 0;
         double q22 = 0; double q2 = 0; double q0 = 0;
         for(Edge edge : edgesList){
@@ -50,8 +56,8 @@ public class Vertex{
             q0 += C * C;
         }
         matrixQ[0][0] = q11; matrixQ[0][1] = q12; matrixQ[0][2] = q1;
-        matrixQ[1][0] = q12; matrixQ[1][1] = q22; matrixQ[1][2] = q2;
-        matrixQ[2][0] = q1; matrixQ[2][1] = q2; matrixQ[2][2] = q0;
+        matrixQ[1][0] = matrixQ[0][1]; matrixQ[1][1] = q22; matrixQ[1][2] = q2;
+        matrixQ[2][0] = matrixQ[0][2]; matrixQ[2][1] = matrixQ[1][2]; matrixQ[2][2] = q0;
         this.isNeedCalc = false;
     }
 
@@ -75,11 +81,20 @@ public class Vertex{
         this.isNeedCalc = true;
     }
 
+    public int getNumCur() {
+        return numCur;
+    }
+
+    public void setNumCur(int numCur) {
+        this.numCur = numCur;
+    }
+
     @Override
     public String toString() {
         return "Vertex{" +
                 "x=" + x +
                 ", y=" + y +
+                ", num=" + numCur +
                 '}';
     }
 }

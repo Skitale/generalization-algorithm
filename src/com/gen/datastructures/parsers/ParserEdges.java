@@ -12,8 +12,24 @@ public class ParserEdges {
     private List<List<Vertex>> vertexList = new ArrayList<>();
     private int countCurves;
     private int[] countPointOfCurvers;
-    private int currentCurves = 0;
 
+    @Deprecated
+    public void parseExp(String file){
+        int numOfCuv = 0;
+        try {
+            try (Scanner scanner = new Scanner(new FileReader(file)).useDelimiter("(\r\n)")) {
+                while (scanner.hasNext()) {
+                    if (scanner.hasNextInt()) {
+                        numOfCuv++;
+                    }
+                    scanner.next();
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        System.out.println(numOfCuv);
+    }
     public void parse(String file){
         try {
             Scanner scanner = new Scanner(new FileReader(file)).useDelimiter("((\r\n)|\\s)");
@@ -57,12 +73,46 @@ public class ParserEdges {
         }
     }
 
-    public static void printIn(String file, List<SimpleEdge> sourselse, List<SimpleEdge> lse ){
+    public void printIn(String file, List<SimpleEdge> sourselse, List<SimpleEdge> lse){
         try {
             PrintWriter printWriter = new PrintWriter(new FileWriter(file));
-            printWriter.print("2");
-            printWriter.println("");
+            Set<Integer> set = new HashSet<>();
+            for(SimpleEdge e : sourselse){
+                set.add(e.getNumCur());
+            }
+            int numCur = set.size();
 
+            List<List<SimpleEdge>> listsEdges = new ArrayList<>();
+            List<List<SimpleEdge>> listsSourceEdges = new ArrayList<>();
+            for(int i = 0; i < numCur; i++){
+                List<SimpleEdge> l = new ArrayList<>();
+                List<SimpleEdge> sourcel = new ArrayList<>();
+                for(SimpleEdge eg: lse) {
+                    if (eg.getNumCur() == i) {
+                        l.add(eg);
+                    }
+                }
+                for(SimpleEdge eg: sourselse) {
+                    if (eg.getNumCur() == i) {
+                        sourcel.add(eg);
+                    }
+                }
+                listsEdges.add(l);
+                listsSourceEdges.add(sourcel);
+            }
+
+            printWriter.print(numCur*2);//2 before
+            printWriter.println("");
+            for(int i = 0; i< listsEdges.size(); i++){
+                printOneCurvIn(printWriter,listsSourceEdges.get(i), listsEdges.get(i));
+            }
+            printWriter.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private void printOneCurvIn(PrintWriter printWriter, List<SimpleEdge> sourselse, List<SimpleEdge> lse ){
             int counter = 0;
             boolean flagCycle = false;
             if(sourselse.get(0).getPointA().equals(sourselse.get(sourselse.size() - 1).getPointB())){
@@ -144,20 +194,20 @@ public class ParserEdges {
                 }
                 printWriter.print(" " + lse.get(lse.size() - 1).getX2() + " " + lse.get(lse.size() - 1).getY2());
             }
-
-            printWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            printWriter.println("");
     }
 
     public void fillGraph(Graph g){
-        List<Vertex> vVertexList = vertexList.get(currentCurves);
-        for (int i = 1; i < vVertexList.size(); i++){
-            g.addEdge(vVertexList.get(i - 1), vVertexList.get(i));
-        }
-        if(countCurves != (currentCurves + 1) ){
-            currentCurves++;
+        for(int k = 0; k < vertexList.size(); k++) {
+            List<Vertex> vVertexList = vertexList.get(k);
+            //vVertexList.get(0).upMn(1000);
+           //vVertexList.get(vVertexList.size() - 1).upMn(1000);
+            for (int i = 1; i < vVertexList.size(); i++) {
+                g.addEdge(vVertexList.get(i - 1), vVertexList.get(i), k);
+            }
+            /*if (countCurves != (currentCurves + 1)) {
+                currentCurves++;
+            }*/
         }
     }
 }
