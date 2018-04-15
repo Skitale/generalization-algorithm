@@ -3,10 +3,12 @@ package com.gen.datastructures.untils;
 public class SimpleEdge {
     private PointInt A;
     private PointInt B;
+    private int numCur;
 
-    public SimpleEdge(int x1, int y1, int x2, int y2) {
+    public SimpleEdge(int x1, int y1, int x2, int y2, int numCur) {
         A = new PointInt(x1, y1);
         B = new PointInt(x2, y2);
+        this.numCur = numCur;
     }
 
     public int getX1() {
@@ -33,6 +35,10 @@ public class SimpleEdge {
         return new PointInt(B.getX(), B.getY());
     }
 
+    public int getNumCur() {
+        return numCur;
+    }
+
     @Override
     public String toString() {
         return "SimpleEdge{" +
@@ -40,6 +46,7 @@ public class SimpleEdge {
                 ", y1=" + A.getY() +
                 ", x2=" + B.getX() +
                 ", y2=" + B.getY() +
+                ", Cur=" + numCur +
                 '}';
     }
 }
