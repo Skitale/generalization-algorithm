@@ -151,8 +151,8 @@ public class ParserEdges {
             int counter = 0;
             if(sourselse.get(0).getPointA().equals(sourselse.get(sourselse.size() - 1).getPointB())){
                 counter++;
-
             }
+
             Set<PointInt> pointInts = new HashSet<>();
             for(SimpleEdge se: sourselse){
                 pointInts.add(se.getPointA());
@@ -188,6 +188,7 @@ public class ParserEdges {
     }
 
     public void printGraphIn(String file, Graph g){
+        g.clear();
         List<SimpleEdge> formattedEdgeList = g.getFormattedEdgeList();
         printIn(file, g.getSrcEdgeList(), formattedEdgeList);
     }

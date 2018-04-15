@@ -6,6 +6,7 @@ import com.gen.datastructures.untils.SimpleEdge;
 import com.gen.datastructures.untils.Vertex;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 public class Graph {
     private List<Vertex> vertexList = new ArrayList<>();
@@ -20,7 +21,7 @@ public class Graph {
 
     }
 
-    public void endAdd(){
+    private void endAdd(){
         for(Edge edge: edgeList){
             srcEdgeList.add(new SimpleEdge(edge.getX1(),edge.getY1(),edge.getX2(),edge.getY2(), edge.getNumCur()));
         }
@@ -92,6 +93,30 @@ public class Graph {
         return null;
     }
 
+    public void mergeCurve(Vertex v){
+        int x = v.getX(); int y = v.getY();
+        List<Edge> listV = v.getEdgesList();
+        Vertex resV = null;
+        for(Vertex vertex : vertexList){
+            if((vertex.getX() == x) && (vertex.getY() == y) && (!vertex.equals(v))){
+                resV = vertex;
+            }
+        }
+        if(resV == null) return;
+
+        List<Edge> listVertex = resV.getEdgesList();
+        for(Edge eV1 : listVertex){
+            Vertex v_ = new Vertex(v.getX(), v.getY());
+            v_.addEdge(eV1);
+            vertexList.add(v_);
+        }
+        for (Edge eV2 : listV){
+            Vertex v_ = new Vertex(resV.getX(), resV.getY());
+            v_.addEdge(eV2);
+            vertexList.add(v_);
+        }
+    }
+
     public void addEdge(Vertex vertex1, Vertex vertex2, int numCur){
         vertex1.setNumCur(numCur); vertex2.setNumCur(numCur);
         Vertex vertexIn1 = hasVertex(vertex1);
@@ -108,7 +133,7 @@ public class Graph {
         edgeList.add(edge);
     }
 
-    public void calMatrixes(){
+    private void calMatrixes(){
         if(!flagEnable){
             return;
         }
@@ -124,7 +149,7 @@ public class Graph {
     }
 
 
-    public void deleteEdges(float proc){
+    private void deleteEdges(float proc){
         float size = edgeList.size();
         while (((edgeList.size() * 100)/size) > proc){
             System.out.println( "Process: " + (edgeList.size() * 100)/size + " %");
@@ -206,6 +231,67 @@ public class Graph {
         }
 
         return result;
+    }
+
+    public void clear(){
+        /*for(Vertex v : vertexList){
+            int num = v.getNumCur();
+            List<Edge> edges = v.getEdgesList();
+            edges.removeIf(new Predicate<Edge>() {
+                @Override
+                public boolean test(Edge edge) {
+                    return edge.getFirst().getNumCur() != num || edge.getSecond().getNumCur() != num;
+                }
+            });
+            System.out.println(edges.toString() + "\n" + v.getEdgesList().toString());
+        }*/
+
+        for(Vertex v: vertexList){
+            List<Edge> edgeList = v.getEdgesList();
+            edgeList.removeIf(new Predicate<Edge>() {
+                @Override
+                public boolean test(Edge e) {
+                    return e.getFirst().equals(v) || e.getSecond().equals(v);
+                }
+            });
+        }
+
+        for(Edge e: edgeList){
+            int num = e.getNumCur();
+            int snum = e.getSecond().getNumCur();
+            int fnum = e.getFirst().getNumCur();
+            if(num != snum){
+                e.getSecond().setNumCur(num);
+                System.out.println(e);
+            } else if(snum != fnum){
+                e.getFirst().setNumCur(num);
+                //list.remove(e);
+                System.out.println(e);
+            }
+        }
+
+        for(int i = 0 ; i < vertexList.size(); i++){
+            Vertex v = vertexList.get(i);
+            vertexList.removeIf(new Predicate<Vertex>() {
+                @Override
+                public boolean test(Vertex vertex) {
+                    int x = vertex.getX(); int y = vertex.getY();
+                    return v.getX() == x && v.getY() == y && v != vertex;
+                }
+            });
+        }
+
+        for(Vertex v : vertexList){
+            int num = v.getNumCur();
+            List<Edge> edges = v.getEdgesList();
+            edges.removeIf(new Predicate<Edge>() {
+                @Override
+                public boolean test(Edge edge) {
+                    return edge.getFirst().getNumCur() != num || edge.getSecond().getNumCur() != num;
+                }
+            });
+            System.out.println(edges.toString() + "\n" + v.getEdgesList().toString());
+        }
     }
 
     private List<SimpleEdge> sortFormat(List<Edge> listE){

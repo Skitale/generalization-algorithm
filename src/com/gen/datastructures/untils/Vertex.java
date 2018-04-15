@@ -20,7 +20,8 @@ public class Vertex{
         this.edgesList = new LinkedList<>();
     }
 
-    public void addInEdge(Edge edge){
+    public void addEdge(Edge edge){
+        if(edgesList.contains(edge)) return;
         edgesList.add(edge);
     }
 

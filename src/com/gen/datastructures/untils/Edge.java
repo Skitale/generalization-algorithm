@@ -22,8 +22,10 @@ public class Edge implements Comparable<Edge>{
         this.matrixQ = new double[3][3];
         this.context = cnxt;
         this.numCur = numCur;
-        first.addInEdge(this);
-        second.addInEdge(this);
+        first.addEdge(this);
+        second.addEdge(this);
+        //cnxt.mergeCurve(first);
+        //cnxt.mergeCurve(second);
     }
 
     public void upPc(int r){
@@ -177,40 +179,41 @@ public class Edge implements Comparable<Edge>{
     public void deleteEdge(){
         Vertex vertex = new Vertex((int) optX,(int)optY);
         vertex.setNumCur(numCur);
-        context.addVertex(vertex);
+        context.addVertex(vertex);// + merge
+        //context.mergeCurve(vertex);
         List<Edge> firstEdgeList = first.getEdgesList();
         List<Edge> secondEdgesList = second.getEdgesList();
         firstEdgeList.remove(this);
         secondEdgesList.remove(this);
         for(Edge edge: firstEdgeList){
-            if(edge.first == this.first){
+            if(edge.first.getX() == this.first.getX() && edge.first.getY() == this.first.getY()){
                 edge.first = vertex;
                 context.deleteVertex(this.first);
             } else {
                 edge.second = vertex;
                 context.deleteVertex(this.second);
             }
-            vertex.addInEdge(edge);
+            vertex.addEdge(edge);
             edge.isNeedCalc = true;
             edge.first.setNeedCalc();
             edge.second.setNeedCalc();
         }
 
         for(Edge edge: secondEdgesList){
-            if(edge.first == this.second){
+            if(edge.first.getX() == this.second.getX() && edge.first.getY() == this.second.getY()){
                 edge.first = vertex;
             } else {
                 edge.second = vertex;
             }
-            vertex.addInEdge(edge);
+            vertex.addEdge(edge);
             edge.isNeedCalc = true;
             edge.first.setNeedCalc();
             edge.second.setNeedCalc();
+        }
 
-            if(!this.contains(vertex)) {
-                context.deleteVertex(this.first);
-                context.deleteVertex(this.second);
-            }
+        if(!this.contains(vertex)) {
+            context.deleteVertex(this.first);
+            context.deleteVertex(this.second);
         }
     }
 
