@@ -1,5 +1,7 @@
 package com.gen.datastructures.untils;
 
+import java.util.List;
+
 public class SimpleEdge {
     private PointInt A;
     private PointInt B;
@@ -37,6 +39,28 @@ public class SimpleEdge {
 
     public int getNumCur() {
         return numCur;
+    }
+
+    public static int findMinX(List<SimpleEdge> simpleEdges){
+        int minX = simpleEdges.get(0).getX1() < simpleEdges.get(0).getX2() ? simpleEdges.get(0).getX1() : simpleEdges.get(0).getX2();
+        for(SimpleEdge e : simpleEdges){
+            int curMin = e.getX1() < e.getX2() ? e.getX1() : e.getX2();
+            if(curMin < minX){
+                minX = curMin;
+            }
+        }
+        return minX;
+    }
+
+    public static int findMinY(List<SimpleEdge> simpleEdges){
+        int minY = simpleEdges.get(0).getY1() < simpleEdges.get(0).getY2() ? simpleEdges.get(0).getY1() : simpleEdges.get(0).getY2();
+        for(SimpleEdge e : simpleEdges){
+            int curMin = e.getY1() < e.getY2() ? e.getY1() : e.getY2();
+            if(curMin < minY){
+                minY = curMin;
+            }
+        }
+        return minY;
     }
 
     @Override

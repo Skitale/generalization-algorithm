@@ -1,5 +1,6 @@
 package com.gen.datastructures;
 
+import com.gen.datastructures.renderengine.EngineSwing;
 import com.gen.datastructures.untils.Edge;
 import com.gen.datastructures.untils.SimpleEdge;
 import com.gen.datastructures.untils.Vertex;
@@ -11,6 +12,8 @@ public class Graph {
     private List<SimpleEdge> srcEdgeList = new ArrayList<>();
     private List<Edge> edgeList = new ArrayList<>();
     private boolean flagEnable = true;
+    private EngineSwing firstRenderEngine;
+    private EngineSwing secondRenderEngine;
 
     //TODO: SUPPORTING FLAT GRAPH. AS GOT A INCORRECT RESULT
     public Graph() {
@@ -27,9 +30,45 @@ public class Graph {
             l.get(0).upMn(2);
             l.get(l.size()-1).upMn(2);
         }
-        //edgeList.get(0).upMn(10000);
-        //edgeList.get(edgeList.size() - 1).upMn(10000);
     }
+
+    public void start(int levelDegree){
+        if(levelDegree > 100) levelDegree = 90;
+        if(levelDegree < 0) levelDegree = 10;
+        endAdd();
+        calMatrixes();
+        sortOnPrice();
+        deleteEdges(levelDegree);
+
+        if(firstRenderEngine != null && secondRenderEngine != null){
+            firstRenderEngine.setSrcEdgeList(getSrcEdgeList());
+            secondRenderEngine.setEdgeList(getEdgeList());
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    secondRenderEngine.setVisible(true);
+                }
+            });
+            t.start();
+            firstRenderEngine.setVisible(true);
+        } else if(firstRenderEngine!=null) {
+            firstRenderEngine.setEdgeList(getEdgeList());
+            firstRenderEngine.setSrcEdgeList(getSrcEdgeList());
+            firstRenderEngine.setVisible(true);
+        }
+    }
+
+    public void setRenderEngine(EngineSwing engine){
+        if(firstRenderEngine!=null) return;
+        this.firstRenderEngine = engine;
+    }
+
+    public void setRenderEngine(EngineSwing fEngine, EngineSwing sEngine){
+        if(firstRenderEngine != null && secondRenderEngine != null) return;
+        this.firstRenderEngine = fEngine;
+        this.secondRenderEngine = sEngine;
+    }
+
     public void addVertex(Vertex vertex){
         if(hasVertex(vertex) == null) {
             vertexList.add(vertex);
@@ -85,11 +124,10 @@ public class Graph {
     }
 
 
-    public void deleteEdges(){
-        float proc = 45.0f;
+    public void deleteEdges(float proc){
         float size = edgeList.size();
         while (((edgeList.size() * 100)/size) > proc){
-            System.out.println((edgeList.size() * 100)/size);
+            System.out.println( "Process: " + (edgeList.size() * 100)/size + " %");
             Edge edge = edgeList.get(0);
             flagEnable = true;
             if(getNumEdgeOfCurves(edge) != 1) {
@@ -129,75 +167,6 @@ public class Graph {
         Collections.sort(edgeList);
     }
 
-    private List<SimpleEdge> desort(List<Edge> edgeList){
-        List<SimpleEdge> le = new ArrayList<>();
-        int k = 0;
-        Edge root = edgeList.get(k);
-        Edge cur = root;
-        int si = -2;
-        while(!root.getA().equals(cur.getB()) && !(si == edgeList.size() - 1)) {
-            //System.out.println("size le: " + le.size());
-            for (int i = 0; i < edgeList.size(); i++) {
-                if(i == k){
-                    si = i;
-                    continue;
-                }
-                int x1 = edgeList.get(k).getX1();
-                int y1 = edgeList.get(k).getY1();
-                int x2 = edgeList.get(k).getX2();
-                int y2 = edgeList.get(k).getY2();
-                int X1 = edgeList.get(i).getX1();
-                int Y1 = edgeList.get(i).getY1();
-                int X2 = edgeList.get(i).getX2();
-                int Y2 = edgeList.get(i).getY2();
-                if ((x2 == X1) && (y2 == Y1) || (x2 == X2)&&(y2 == Y2)) {
-                    le.add(new SimpleEdge(x1, y1, x2, y2, edgeList.get(k).getNumCur()));
-                    k = i;
-                    cur = edgeList.get(k);
-                    break;
-                }
-                si = i;
-            }
-        }
-        int x1 = edgeList.get(k).getX1();
-        int y1 = edgeList.get(k).getY1();
-        int x2 = edgeList.get(k).getX2();
-        int y2 = edgeList.get(k).getY2();
-        le.add(new SimpleEdge(x1, y1, x2, y2, edgeList.get(k).getNumCur()));
-        if(le.size()!=edgeList.size()) {
-            List<SimpleEdge> les = new ArrayList<>();
-            k = 0;
-            si = -2;
-            while (!(si == edgeList.size() - 1)){
-                //System.out.println("size les: " + les.size());
-                for (int i = 0; i < edgeList.size(); i++) {
-                    if(i == k){
-                        si = i;
-                        continue;
-                    }
-                    x1 = edgeList.get(k).getX1();
-                    y1 = edgeList.get(k).getY1();
-                    int X1 = edgeList.get(i).getX1();
-                    int Y1 = edgeList.get(i).getY1();
-                    int X2 = edgeList.get(i).getX2();
-                    int Y2 = edgeList.get(i).getY2();
-                    if ((x1 == X2) && (y1 == Y2)) {
-                        les.add(0, new SimpleEdge(X1, Y1, X2, Y2, edgeList.get(i).getNumCur()));
-                        k = i;
-                        break;
-                    }
-                    si = i;
-                }
-            }
-            les.addAll(le);
-            if (les.size() != edgeList.size()){
-                System.out.println("WARNING! WARNING!");
-            }
-            return les;
-        }
-        return le;
-    }
-
     public static int getNumCur(List<Edge> list){
         Set<Integer> set = new HashSet<>();
         for(Edge e : list){
@@ -226,7 +195,6 @@ public class Graph {
         List<List<Edge>> listsEdges = divByNumCur(edgeList, numCur);
         List<SimpleEdge> result = new ArrayList<>();
 
-        //List<SimpleEdge> l = sortFormat(listsEdges.get(27));
 
         for(List<Edge> listE : listsEdges){
             List<SimpleEdge> t = sortFormat(listE);
@@ -250,8 +218,8 @@ public class Graph {
                 break;
             }
         }
-        if(listE.get(0).getFirst().equals(listE.get(listE.size()-1).getSecond()) || root == null){
-            return desort(listE);
+        if(root == null){ // then cycle
+            return sortFormatForCycle(listE);
         }
 
         Edge edgeCurrent = root.getEdgesList().get(0);
@@ -261,13 +229,7 @@ public class Graph {
             }
         }
 
-        int x1 = edgeCurrent.getX1();
-        int y1 = edgeCurrent.getY1();
-        int x2 = edgeCurrent.getX2();
-        int y2 = edgeCurrent.getY2();
-        int numCur = edgeCurrent.getNumCur();
-        res.add(new SimpleEdge(x1, y1, x2, y2, numCur));
-
+        addEdgeInList(res,edgeCurrent);
         Vertex currentVertx = edgeCurrent.getSecond();
         while (edgeCurrent.getListEdgeForSecond().size() != 1 ){
             for(Edge e : edgeCurrent.getListEdgeForSecond()){
@@ -280,15 +242,48 @@ public class Graph {
                     edgeCurrent = e;
                 }
             }
-            x1 = edgeCurrent.getX1();
-            y1 = edgeCurrent.getY1();
-            x2 = edgeCurrent.getX2();
-            y2 = edgeCurrent.getY2();
-            numCur = edgeCurrent.getNumCur();
-            res.add(new SimpleEdge(x1, y1, x2, y2, numCur));
+            addEdgeInList(res,edgeCurrent);
         }
 
         return res;
+    }
+
+    private List<SimpleEdge> sortFormatForCycle(List<Edge> listE) {
+        List<SimpleEdge> res = new ArrayList<>();
+        Vertex root = listE.get(0).getFirst();
+        Edge edgeCurrent = null;
+        for(Edge e: root.getEdgesList()){
+            if(e.getFirst() == root){
+                edgeCurrent = e;
+            }
+        }
+
+        Edge edgeRoot = edgeCurrent;
+        addEdgeInList(res, edgeRoot);
+        edgeCurrent = null;
+
+        Vertex currentVertx = edgeRoot.getSecond();
+        while (edgeCurrent != edgeRoot){
+            for(Edge e : currentVertx.getEdgesList()){
+                if(e.getFirst() == currentVertx){
+                    edgeCurrent = e;
+                    currentVertx = e.getSecond();
+                }
+            }
+            addEdgeInList(res, edgeCurrent);
+        }
+        res.remove(res.size()-1);
+        return res;
+    }
+
+    private void addEdgeInList(List<SimpleEdge> list, Edge edge){
+        if(edge==null) return;
+        int x1 = edge.getX1();
+        int y1 = edge.getY1();
+        int x2 = edge.getX2();
+        int y2 = edge.getY2();
+        int numCur = edge.getNumCur();
+        list.add(new SimpleEdge(x1, y1, x2, y2, numCur));
     }
 }
 

@@ -90,6 +90,26 @@ public class Vertex{
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Vertex)) return false;
+
+        Vertex vertex = (Vertex) o;
+
+        if (getX() != vertex.getX()) return false;
+        if (getY() != vertex.getY()) return false;
+        return getNumCur() == vertex.getNumCur();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getX();
+        result = 31 * result + getY();
+        result = 31 * result + getNumCur();
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "Vertex{" +
                 "x=" + x +

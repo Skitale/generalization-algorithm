@@ -14,7 +14,7 @@ public class Edge implements Comparable<Edge>{
     private double priceContraction;
     private Graph context;
     private boolean isNeedCalc = true;
-    private int mn = 1;
+    private double mn = 1;
 
     public Edge(Vertex first, Vertex second, int numCur, Graph cnxt) {
         this.first = first;
@@ -33,7 +33,7 @@ public class Edge implements Comparable<Edge>{
         priceContraction*= priceContraction < 0 ? -10 : r;
     }
 
-    public void upMn(int r){
+    public void upMn(double r){
         mn *= r;
     }
 
@@ -112,7 +112,7 @@ public class Edge implements Comparable<Edge>{
             for(int j = 0; j < 3; j++){
                 double d = first.getMatrix(i,j) + second.getMatrix(i,j);
                 if(mn > 1){
-                    matrixQ[i][j] = d < 0 ? -d * mn : d * mn;
+                    matrixQ[i][j] = d < 0 ? d / mn : d * mn;
                 } else {
                     matrixQ[i][j] = d;
                 }
@@ -147,50 +147,6 @@ public class Edge implements Comparable<Edge>{
         return new Point(minX, minY);
     }
 
-    @Deprecated
-    public void solveMinimizationFunction(){
-        if(!isNeedCalc) return;
-        double y1;
-        double y2;
-        double y1_ = (matrixQ[1][1]*matrixQ[0][0] - matrixQ[0][1]*matrixQ[0][1]);
-        double y2_ = (matrixQ[0][0]*matrixQ[1][2] - matrixQ[0][2]*matrixQ[0][1]);
-        boolean nullDiv = false;
-        if(y1_!=0.0f){
-             y1 = (matrixQ[0][1]*matrixQ[0][2] - matrixQ[0][0]*matrixQ[2][1])/y1_;
-        } else {
-            y1 = Float.MAX_VALUE;
-            nullDiv = true;
-        }
-        if(y2_!=0.0f){
-            y2 = (matrixQ[0][2]*matrixQ[0][2] - matrixQ[0][0]*matrixQ[2][2])/y2_;
-        } else {
-            y2 = Float.MAX_VALUE - Float.MAX_VALUE/2;
-            nullDiv = true;
-        }
-
-        if((y1 == y2) && !nullDiv){
-            //System.out.println("all is fine!");
-            double x = -y1*(matrixQ[0][1]/matrixQ[0][0])-(matrixQ[0][2]/matrixQ[0][0]);
-            this.optX = x > 0 ? x : -x;
-            this.optY = y1 > 0 ? y1 : -y1;
-        } else {
-            //System.out.println("NOT fine: y1= "+ y1 + ", y2= " + y2 + ", [" + this.first.toString() + this.second.toString() + "]");
-            double f1 = function(first.getX(), first.getY());
-            double f2 = function(second.getX(), second.getY());
-            //Point p = minFun(first.getX(), first.getY());
-            //System.out.println("MY OPT: optX= "+ p.getX() + ", optY= " + p.getY());
-            if(f1 > f2){
-                this.optX = second.getX(); this.optY = second.getY();
-            } else {
-                this.optX = first.getX(); this.optY = first.getY();
-            }
-        }
-        //System.out.println("OPT: optX= "+ optX + ", optY= " + optY);
-        this.priceContraction = function(this.optX, this.optY);
-        this.isNeedCalc = false;
-    }
-
-
     public void solveMin(){
         if(!isNeedCalc) return;
         double delta = 4*getQ11()*getQ22() - 4*Math.pow(getQ12(),2);
@@ -206,8 +162,7 @@ public class Edge implements Comparable<Edge>{
             //System.out.println("NOT fine: y1= "+ y1 + ", y2= " + y2 + ", [" + this.first.toString() + this.second.toString() + "]");
             double f1 = function(first.getX(), first.getY());
             double f2 = function(second.getX(), second.getY());
-            //Point p = minFun(first.getX(), first.getY());
-            //System.out.println("MY OPT: optX= "+ p.getX() + ", optY= " + p.getY());
+
             if(f1 > f2){
                 this.optX = second.getX(); this.optY = second.getY();
             } else {
@@ -227,7 +182,6 @@ public class Edge implements Comparable<Edge>{
         List<Edge> secondEdgesList = second.getEdgesList();
         firstEdgeList.remove(this);
         secondEdgesList.remove(this);
-
         for(Edge edge: firstEdgeList){
             if(edge.first == this.first){
                 edge.first = vertex;
@@ -252,9 +206,16 @@ public class Edge implements Comparable<Edge>{
             edge.isNeedCalc = true;
             edge.first.setNeedCalc();
             edge.second.setNeedCalc();
-            //context.deleteVertex(this.first);
-            //context.deleteVertex(this.second);
+
+            if(!this.contains(vertex)) {
+                context.deleteVertex(this.first);
+                context.deleteVertex(this.second);
+            }
         }
+    }
+
+    private boolean contains(Vertex v){
+        return first.equals(v) || second.equals(v);
     }
 
     @Override
@@ -273,14 +234,4 @@ public class Edge implements Comparable<Edge>{
                 ", priceContraction=" + priceContraction +
                 '}';
     }
-
-    /*public void addFirstVer(Vertex vertex){
-        this.first = vertex;
-        first.addInEdge(this);
-    }
-
-    public void addSecondVer(Vertex vertex){
-        this.second = vertex;
-        second.addInEdge(this);
-    }*/
 }
